@@ -1,18 +1,27 @@
 import React from 'react';
-import { AxiosError } from 'axios';
 import { io } from 'socket.io-client';
 
 import NewsItem from '../MessageItem/MessageItem';
 import ListWrapper from './MessagesList.styles';
 import config from '../../utils/constant';
-import { getMessages } from '../../api/messagesApi';
-import showToast from '../../utils/showToast';
+import { useGetMessages } from '../../api/messagesApi';
 
 const socket = io(config.socketUrl);
 
 const MessagesList: React.FC = () => {
   const [messages, setMessages] = React.useState<string[]>(['']);
   const [updateIndicator, setUpdateIndicator] = React.useState<boolean>(false);
+
+  const { data, refetch } = useGetMessages();
+
+  React.useEffect(() => {
+    refetch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [updateIndicator]);
+
+  React.useEffect(() => {
+    setMessages(data?.data.messages as string[]);
+  }, [data]);
 
   React.useEffect(() => {
     socket.on('getMessage', (...options) => {
@@ -22,25 +31,11 @@ const MessagesList: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  React.useEffect(() => {
-    (async () => {
-      try {
-        const result = await getMessages();
-
-        setMessages(result.data.messages);
-      } catch (err) {
-        if (err instanceof AxiosError) {
-          showToast(err.message);
-        }
-      }
-    })();
-  }, [updateIndicator]);
-
   return (
     <ListWrapper>
-      {messages?.map((message) => (
+      {messages?.map((message, index) => (
         <NewsItem
-          key={message}
+          key={index}
           message={message}
         />
       ))}

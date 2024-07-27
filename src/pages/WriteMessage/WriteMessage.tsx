@@ -6,12 +6,13 @@ import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import WriteMessageWrapper from './WriteMessage.styles';
 import config from '../../utils/constant';
-import { setMessage } from '../../api/messagesApi';
+import { useSetMessage } from '../../api/messagesApi';
 import showToast from '../../utils/showToast';
 
 const socket = io(config.socketUrl);
 
 const WriteMessage: React.FC = () => {
+  const { mutate } = useSetMessage();
   const [text, setText] = React.useState('');
 
   const onTextChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -35,9 +36,10 @@ const WriteMessage: React.FC = () => {
         message: text.trim(),
       };
 
-      const message = await setMessage(data);
+      mutate(data);
 
       socket.emit('setMessage', 'A new message has been sent');
+
       setText('');
     } catch (err) {
       if (err instanceof AxiosError) {

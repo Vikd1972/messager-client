@@ -1,3 +1,4 @@
+import { useQuery, useMutation } from 'react-query';
 import instance from '.';
 
 class NewsEndpoints {
@@ -12,19 +13,20 @@ type MessagesResponseType = {
   } ;
 };
 
-export const getMessages = (): Promise<MessagesResponseType> => {
-  return instance.get(
-    NewsEndpoints.getMessages(),
-  );
-};
-
 type MessageRequesrType = {
   message: string;
 };
 
-export const setMessage = (data: MessageRequesrType): Promise<string> => {
-  return instance.post(
-    NewsEndpoints.createMessage(),
-    data,
+export const useGetMessages = () => {
+  return useQuery<MessagesResponseType>(
+    'messages',
+    () => instance.get(NewsEndpoints.getMessages()),
+  );
+};
+
+export const useSetMessage = () => {
+  return useMutation<string, unknown, MessageRequesrType>(
+    'createMessage',
+    (data) => instance.post(NewsEndpoints.createMessage(), data),
   );
 };
